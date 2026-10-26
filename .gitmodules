@@ -1,0 +1,9 @@
+[submodule "deploy/third_party/Fast-FoundationStereo"]
+	path = deploy/third_party/Fast-FoundationStereo
+	url = https://github.com/learnsyslab/Fast-FoundationStereo.git
+[submodule "deploy/third_party/unitree_sdk2_python"]
+	path = deploy/third_party/unitree_sdk2_python
+	url = https://github.com/unitreerobotics/unitree_sdk2_python.git
+[submodule "training/third_party/IsaacLab"]
+	path = training/third_party/IsaacLab
+	url = https://github.com/isaac-sim/IsaacLab.git
