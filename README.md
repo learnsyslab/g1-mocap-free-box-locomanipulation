@@ -7,6 +7,16 @@ places it, guided only by its **head depth camera and proprioception**. At deplo
 there is no motion capture, no object pose estimator and no robot position: the policy
 sees a 64 × 48 depth image, the IMU and the joint encoders.
 
+**The final depth student at four extreme box placements** (simulation, IsaacLab): box 0.45 m
+further away, 0.40 m to the side, rotated 90°, and lying on its side.
+
+https://github.com/user-attachments/assets/8578eb93-8277-4efe-b8c7-e61c0322b923
+
+**The reference motion** every policy tracks: one human demonstration, retargeted and refined
+for the G1, replayed kinematically with the box.
+
+https://github.com/user-attachments/assets/6177c248-4957-4a90-9ddf-fd5e57ea7529
+
 This repository contains everything for that one task:
 
 | | |
