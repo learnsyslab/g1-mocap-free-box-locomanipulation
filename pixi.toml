@@ -138,4 +138,6 @@ stage = { cmd = "python scripts/rsl_rl/stage.py", cwd = "training" }
 play = { cmd = "python scripts/rsl_rl/play.py", cwd = "training" }
 evaluate = { cmd = "python scripts/eval/evaluate_tracking_isaaclab.py --headless", cwd = "training" }
 render = { cmd = "python scripts/eval/render_student_rollout.py", cwd = "training" }
+render-reference = { cmd = "python scripts/eval/render_reference_motion.py", cwd = "training" }
+render-showcase = { cmd = "python scripts/eval/render_showcase.py", cwd = "training" }
 export = { cmd = "python scripts/student/export_depth_student.py", cwd = "training" }

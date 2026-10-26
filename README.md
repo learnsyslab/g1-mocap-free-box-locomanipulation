@@ -10,12 +10,12 @@ sees a 64 × 48 depth image, the IMU and the joint encoders.
 **The final depth student at four extreme box placements** (simulation, IsaacLab): box 0.45 m
 further away, 0.40 m to the side, rotated 90°, and lying on its side.
 
-https://github.com/user-attachments/assets/8578eb93-8277-4efe-b8c7-e61c0322b923
+https://github.com/user-attachments/assets/25a38868-5fd5-40d1-a547-4c8acb9204dc
 
 **The reference motion** every policy tracks: one human demonstration, retargeted and refined
 for the G1, replayed kinematically with the box.
 
-https://github.com/user-attachments/assets/6177c248-4957-4a90-9ddf-fd5e57ea7529
+https://github.com/user-attachments/assets/faa6211f-ae72-40c1-9a7d-478058e049b6
 
 This repository contains everything for that one task:
 
@@ -164,8 +164,13 @@ pixi run -e train stage finetune-stage2                          # wider box ran
 pixi run -e train evaluate --task G1-DummyHands-RealBox-RealCam-Finetune-Play \
     --checkpoint ../checkpoints/student_realcam_stage2_model_8998.pt --num_envs 512 --start_frame 0 \
     --object_symmetry 2fold
-# video of one rollout: scene view + the student's depth input
+# video of one rollout: scene view + the student's depth input (--box_x/--box_y/--box_yaw/--box_rest
+# pin the box placement)
 pixi run -e train render --checkpoint ../checkpoints/student_realcam_stage2_model_8998.pt --out_dir /tmp/rollout
+# the videos at the top of this README: the final student at four extreme box placements (2x2 tile),
+# and the reference motion replayed kinematically
+pixi run -e train render-showcase --out_dir /tmp/showcase
+pixi run -e train render-reference --out_dir /tmp/reference
 # TorchScript export, verified against the eager model; copy policy.pt to deploy/policy/
 pixi run -e train export --task G1-DummyHands-RealBox-RealCam-Finetune-Stage2 \
     --checkpoint ../checkpoints/student_realcam_stage2_model_8998.pt --out_dir /tmp/export

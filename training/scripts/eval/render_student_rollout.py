@@ -30,7 +30,7 @@ from isaaclab.app import AppLauncher
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument("--task", type=str, default="G1-DummyHands-RealBox-RealCam-Finetune-Stage2-Play")
 parser.add_argument("--checkpoint", type=str, required=True)
-parser.add_argument("--steps", type=int, default=700)
+parser.add_argument("--steps", type=int, default=495, help="control steps (the motion is 495)")
 parser.add_argument("--box_x", type=float, default=None, help="pin box x offset (default: random)")
 parser.add_argument("--box_y", type=float, default=None)
 parser.add_argument("--box_yaw", type=float, default=None, help="pin box yaw in radians")
@@ -45,22 +45,13 @@ parser.add_argument("--cam_pitch_deg", type=float, default=None,
                     help="override the depth camera pitch-down angle")
 parser.add_argument("--cam_fovy_deg", type=float, default=None,
                     help="override the depth camera vertical FOV (real D435 depth is 58)")
-parser.add_argument("--scene_eye", type=float, nargs=3, default=None,
-                    help="third-person camera position. Default frames the "
-                         "NOMINAL spawn; a displaced box walks the robot out of "
-                         "that frame, so pull back for far spawns. Keep y=0: the "
-                         "rotation solved below is pitch-only.")
-parser.add_argument("--scene_lookat", type=float, nargs=3, default=None,
-                    help="third-person camera target (keep y=0, see --scene_eye)")
+parser.add_argument("--scene_eye", type=float, nargs=3, default=(1.6, -3.2, 1.7),
+                    help="third-person camera position (default: beside the demo's walking path)")
+parser.add_argument("--scene_lookat", type=float, nargs=3, default=(-0.2, -0.25, 0.45),
+                    help="third-person camera target")
 parser.add_argument("--hide_head", action="store_true",
                     help="hide head_link so it cannot occlude the depth camera; the real "
                          "sensor looks out through the visor and never sees its own housing")
-parser.add_argument("--background", type=int, default=0,
-                    help="number of randomised background cuboids (0 = current "
-                         "empty scene). Real depth has surfaces at every pixel; "
-                         "the training scene has floor, robot and box only.")
-parser.add_argument("--background_seed", type=int, default=0,
-                    help="which room layout to use")
 parser.add_argument("--out_dir", type=str, required=True)
 AppLauncher.add_app_launcher_args(parser)
 args_cli = parser.parse_args()
@@ -78,6 +69,14 @@ from isaaclab_tasks.utils import parse_env_cfg  # noqa: E402
 from rsl_rl.runners import OnPolicyRunner  # noqa: E402
 
 import g1_mocap_free_box.tasks  # noqa: F401, E402
+
+
+def look_at_quat_xyzw(eye, lookat):
+    """Rotation (x, y, z, w) aiming a camera ("world" convention: forward +X, up +Z) from eye at lookat."""
+    dx, dy, dz = (lookat[i] - eye[i] for i in range(3))
+    yaw, pitch = math.atan2(dy, dx), math.atan2(-dz, math.hypot(dx, dy))
+    sz, cz, sp, cp = math.sin(yaw / 2), math.cos(yaw / 2), math.sin(pitch / 2), math.cos(pitch / 2)
+    return (-sz * sp, cz * sp, sz * cp, cz * cp)
 
 
 def _as_tensor(x):
@@ -116,7 +115,7 @@ def main() -> None:
         rest = (rest[args_cli.box_rest],)
         print(f"[INFO] resting face pinned to index {args_cli.box_rest}: {rest[0]}")
     env_cfg.commands.motion = m.replace(object_pose_range=rng,
-                                        object_resting_states=rest)
+                                        object_resting_states=rest, debug_vis=False)
 
     # Camera overrides, so the robot's ACTUAL mount and the real sensor FOV can be
     # rendered without editing the task. The trained policy still expects what it
@@ -175,17 +174,7 @@ def main() -> None:
     from isaaclab.sensors import CameraCfg
     from isaaclab.sim import PinholeCameraCfg
 
-    eye = tuple(args_cli.scene_eye) if args_cli.scene_eye else (-2.0, 0.0, 1.3)
-    lookat = (tuple(args_cli.scene_lookat) if args_cli.scene_lookat
-              else (0.47, 0.0, 0.5))
-    # The rotation below is a pitch about +Y only, so a camera off the y=0 plane
-    # would point past the subject rather than at it.
-    if abs(eye[1]) > 1e-6 or abs(lookat[1]) > 1e-6:
-        print(f"[WARN] scene camera y != 0 (eye {eye}, lookat {lookat}): the "
-              "solved rotation is pitch-only and will not aim sideways")
-    dx, dz = lookat[0] - eye[0], lookat[2] - eye[2]
-    pitch = math.atan2(-dz, dx)  # positive rotation about +Y tilts the view down
-    half = pitch / 2.0
+    eye, lookat = tuple(args_cli.scene_eye), tuple(args_cli.scene_lookat)
     env_cfg.scene.scene_cam = CameraCfg(
         prim_path="{ENV_REGEX_NS}/scene_cam",
         update_period=0.0,
@@ -193,11 +182,7 @@ def main() -> None:
         height=480,
         data_types=["rgb"],
         spawn=PinholeCameraCfg(clipping_range=(0.05, 50.0)),
-        offset=CameraCfg.OffsetCfg(
-            pos=eye,
-            rot=(0.0, math.sin(half), 0.0, math.cos(half)),
-            convention="world",
-        ),
+        offset=CameraCfg.OffsetCfg(pos=eye, rot=look_at_quat_xyzw(eye, lookat), convention="world"),
     )
     env_cfg.viewer.eye = eye
     env_cfg.viewer.lookat = lookat
@@ -211,32 +196,6 @@ def main() -> None:
     # its observation is still the depth image alone.
     if "rgb" not in env_cfg.scene.depth_cam.data_types:
         env_cfg.scene.depth_cam.data_types = list(env_cfg.scene.depth_cam.data_types) + ["rgb"]
-    if args_cli.background > 0:
-        from g1_mocap_free_box.tasks.manager_based.tracking.mdp.clutter import add_clutter
-
-        placed = add_clutter(
-            env_cfg.scene,
-            count=args_cli.background,
-            seed=args_cli.background_seed,
-            centre=(0.5, 0.0),
-            # The box starts ~0.42, -0.14; keep a wide berth so background never
-            # occludes the thing the policy has to find.
-            keep_clear_of=((0.42, -0.14, 0.55),),
-            # And keep the third-person camera's view of the robot clear, or the
-            # clip is a close-up of a grey slab.
-            sightlines=(((eye[0], eye[1]), (lookat[0], lookat[1])),),
-            # The motion's heading at frame 0. Without this the ring scatters
-            # pieces where the camera never looks -- measured 2 of 9 in frame.
-            facing_rad=math.radians(-96.4),
-            walls=3,
-        )
-        print(f"[render] background: {len(placed)} cuboids, "
-              f"seed {args_cli.background_seed}")
-        for x, y, sx, sy, sz in placed:
-            d = math.hypot(x - 0.5, y)
-            print(f"[render]   ({x:+.2f}, {y:+.2f})  {sx:.2f}x{sy:.2f}x{sz:.2f} m"
-                  f"  {d:.2f} m from the robot")
-
     for name in ("push_robot", "push_object"):
         if hasattr(env_cfg.events, name):
             setattr(env_cfg.events, name, None)
