@@ -1,0 +1,50 @@
+# The head D435 as a DEVICE, for realsense_depth.py. Everything the policy needs is in its
+# camera contract (g1_box_deploy/camera.py) -- this file is only about how to talk to the
+# sensor and produce that contract. Relative paths are relative to this file.
+#
+#   pixi run -e real realsense                      # uses this file
+#   pixi run -e real realsense --device other.toml  # override
+
+[stream]
+# 848x480 is the D435's native 16:9 depth mode. The FOV changes with resolution --
+# 640x480 is a horizontal crop of this, so it is narrower. The driver reads intrinsics from
+# librealsense rather than assuming, so changing this stays correct, but it changes how
+# much of the trained field of view is available.
+width = 848
+height = 480
+# 60, not 30. The control loop runs at 50 Hz and consumes one frame per tick, so there is
+# no point publishing faster than that -- but there IS a point in the camera running faster
+# than the publish rate, because it shortens how stale the newest frame can be. The student
+# trained against up to 40 ms of lag; at 30 fps the inter-frame gap alone is 33 ms.
+#
+# The trade: higher fps means shorter exposure, so a dimmer IR image and worse stereo
+# matching -- which matters more without the projector. Drop to 30 if the images look starved.
+fps = 60
+
+[backend]
+# trt = Fast-FoundationStereo as a TensorRT engine (deployment)
+# rs  = the D435's own onboard stereo (bring-up: exercises the whole chain -- topic, format,
+#       resample, runtime, arming -- with no network in the loop, so plumbing problems and
+#       model problems stay separate)
+type = "trt"
+
+# A FIXED-SIZE plan (1x3x480x640), built on this machine from the Fast-FoundationStereo
+# submodule: `pixi run -e real build-engine` (weights 23-36-37, valid_iters 8, max_disp 192,
+# fp16, TensorRT 10.11.0.33). Verify with `pixi run -e real engine-check` (no camera needed).
+engine = "third_party/Fast-FoundationStereo/output_single_trt/fast_foundationstereo.engine"
+# The Fast-FoundationStereo checkout; --engine-check reads its reference pair (demo_data/).
+repo = "third_party/Fast-FoundationStereo"
+
+# The IR projector paints texture for the D435's own block matcher, which needs it. A
+# learned matcher keys on natural texture instead, so it is at best neutral there. Default
+# follows the backend (off for trt, on for rs) unless set to true/false here.
+# emitter = false
+
+[publish]
+# Matches the 50 Hz control loop. Publishing faster is wasted work; publishing slower
+# increases staleness against run_policy.py's --max_depth_age.
+rate_hz = 50.0
+# Sanity gate before the policy's own clipping: below the first is a bad stereo match,
+# above the second is noise. Both become NaN, which the runtime maps to FAR -- never near.
+valid_min_m = 0.05
+valid_max_m = 10.0

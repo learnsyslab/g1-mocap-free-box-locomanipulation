@@ -1,0 +1,21 @@
+<mujoco model="ground world with box">
+  <asset>
+    <texture name="groundplane" type="2d" builtin="checker" mark="edge"
+      rgb1="0.2 0.3 0.4" rgb2="0.1 0.2 0.3" markrgb="0.8 0.8 0.8"
+      width="300" height="300"/>
+    <material name="groundplane" texture="groundplane" texuniform="true"
+      texrepeat="5 5" reflectance="0.2"/>
+    <texture name="skybox" type="skybox" builtin="gradient"
+      rgb1="0.3 0.5 0.7" rgb2="0 0 0" width="512" height="3072"/>
+  </asset>
+  <worldbody>
+    <light pos="0 0 1.5" dir="0 0 -1" type="directional"/>
+    <geom name="floor" type="plane" size="0 0 0.05" material="groundplane" friction="0.6 0.0001 0.0001"/>
+    <body name="object" pos="0.4197 -0.1372 0.1445"
+            quat="-0.931 0.0055 0.0073 0.365">
+        <freejoint name="object_freejoint"/>
+        <geom name="obj" type="box" size="0.1025 0.0625 0.14" mass="0.6"
+              friction="0.6 0.0001 0.0001" condim="3" rgba="0.55 0.38 0.22 1"/>
+      </body>
+  </worldbody>
+</mujoco>

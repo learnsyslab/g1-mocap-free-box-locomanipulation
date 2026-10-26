@@ -1,0 +1,26 @@
+[package]
+
+# Semantic Versioning is used: https://semver.org/
+version = "0.1.0"
+
+# Description
+category = "isaaclab"
+readme  = "README.md"
+
+title = "G1 real-box teacher + depth student"
+author = "Jim Yun-Jin Li, Learning Systems and Robotics Lab (LSY), Technical University of Munich"
+maintainer = "Jim Yun-Jin Li"
+description="IsaacLab tasks for a vicon-free G1 box pick-up: privileged teacher and depth-camera student"
+repository = ""
+keywords = ["isaaclab", "unitree-g1", "humanoid", "depth", "distillation"]
+
+[dependencies]
+"isaaclab" = {}
+"isaaclab_assets" = {}
+"isaaclab_rl" = {}
+"isaaclab_tasks" = {}
+
+[[python.module]]
+name = "g1_mocap_free_box"
+
+[isaac_lab_settings]

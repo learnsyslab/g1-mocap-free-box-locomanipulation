@@ -1,0 +1,639 @@
+#usda 1.0
+(
+    defaultPrim = "g1_29dof_rev_1_0"
+    framesPerSecond = 24
+    metersPerUnit = 1
+    timeCodesPerSecond = 24
+    upAxis = "Z"
+)
+
+def Xform "g1_29dof_rev_1_0" (
+    prepend references = @g1_29dof_rev_1_0.usd@
+)
+{
+    over "left_ankle_roll_link" (
+        prepend apiSchemas = ["PhysicsFilteredPairsAPI"]
+    )
+    {
+        prepend rel physics:filteredPairs = </g1_29dof_rev_1_0/left_knee_link>
+
+        over "collisions" (
+            active = false
+        )
+        {
+        }
+
+        def Xform "collisions_primitive"
+        {
+            def Cube "col_0" (
+                prepend apiSchemas = ["PhysicsCollisionAPI"]
+            )
+            {
+                uniform token purpose = "guide"
+                double size = 1
+                quatf xformOp:orient = (1, 0, 0, 0)
+                float3 xformOp:scale = (0.18, 0.06, 0.016)
+                double3 xformOp:translate = (0.04, 0, -0.029)
+                uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+            }
+
+            def Capsule "col_1" (
+                prepend apiSchemas = ["PhysicsCollisionAPI"]
+            )
+            {
+                uniform token axis = "Z"
+                double height = 0.05000999900019996
+                uniform token purpose = "guide"
+                double radius = 0.01
+                quatf xformOp:orient = (0.70710677, 0.014139308, -0.7069654, 0)
+                double3 xformOp:translate = (0.07500000000000001, -0.0265, -0.025)
+                uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient"]
+            }
+
+            def Capsule "col_2" (
+                prepend apiSchemas = ["PhysicsCollisionAPI"]
+            )
+            {
+                uniform token axis = "Z"
+                double height = 0.18
+                uniform token purpose = "guide"
+                double radius = 0.01
+                quatf xformOp:orient = (0.70710677, 0, 0.70710677, 0)
+                double3 xformOp:translate = (0.04, 0, -0.025)
+                uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient"]
+            }
+
+            def Capsule "col_3" (
+                prepend apiSchemas = ["PhysicsCollisionAPI"]
+            )
+            {
+                uniform token axis = "Z"
+                double height = 0.05
+                uniform token purpose = "guide"
+                double radius = 0.01
+                quatf xformOp:orient = (0.70710677, 0, -0.70710677, 0)
+                double3 xformOp:translate = (0.07500000000000001, 0.026, -0.025)
+                uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient"]
+            }
+        }
+    }
+
+    over "left_hip_pitch_link"
+    {
+        over "collisions" (
+            active = false
+        )
+        {
+        }
+    }
+
+    over "left_hip_yaw_link"
+    {
+        over "collisions" (
+            active = false
+        )
+        {
+        }
+
+        def Xform "collisions_primitive"
+        {
+            def Capsule "col_0" (
+                prepend apiSchemas = ["PhysicsCollisionAPI"]
+            )
+            {
+                uniform token axis = "Z"
+                double height = 0.15231546211727817
+                uniform token purpose = "guide"
+                double radius = 0.055
+                quatf xformOp:orient = (0.20106587, -0, -0.9795777, 0)
+                double3 xformOp:translate = (-0.03, 0, -0.1)
+                uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient"]
+            }
+        }
+    }
+
+    over "left_knee_link"
+    {
+        over "collisions" (
+            active = false
+        )
+        {
+        }
+
+        def Xform "collisions_primitive"
+        {
+            def Capsule "col_0" (
+                prepend apiSchemas = ["PhysicsCollisionAPI"]
+            )
+            {
+                uniform token axis = "Z"
+                double height = 0.15
+                uniform token purpose = "guide"
+                double radius = 0.045
+                quatf xformOp:orient = (0, 1, 0, 0)
+                double3 xformOp:translate = (0.01, 0, -0.075)
+                uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient"]
+            }
+
+            def Capsule "col_1" (
+                prepend apiSchemas = ["PhysicsCollisionAPI"]
+            )
+            {
+                uniform token axis = "Z"
+                double height = 0.08000000000000002
+                uniform token purpose = "guide"
+                double radius = 0.03
+                quatf xformOp:orient = (0, 1, 0, 0)
+                double3 xformOp:translate = (0.01, 0, -0.24000000000000002)
+                uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient"]
+            }
+        }
+    }
+
+    over "left_shoulder_pitch_link"
+    {
+        over "collisions" (
+            active = false
+        )
+        {
+        }
+    }
+
+    over "left_shoulder_yaw_link"
+    {
+        over "collisions" (
+            active = false
+        )
+        {
+        }
+
+        def Xform "collisions_primitive"
+        {
+            def Capsule "col_0" (
+                prepend apiSchemas = ["PhysicsCollisionAPI"]
+            )
+            {
+                uniform token axis = "Z"
+                double height = 0.13
+                uniform token purpose = "guide"
+                double radius = 0.035
+                quatf xformOp:orient = (1, 0, 0, 0)
+                double3 xformOp:translate = (0, 0, -0.015)
+                uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient"]
+            }
+        }
+    }
+
+    over "left_wrist_roll_link"
+    {
+        over "collisions" (
+            active = false
+        )
+        {
+        }
+    }
+
+    over "left_wrist_yaw_link"
+    {
+        over "collisions" (
+            active = false
+        )
+        {
+        }
+
+        def Xform "collisions_primitive"
+        {
+            def Cube "col_0" (
+                prepend apiSchemas = ["PhysicsCollisionAPI"]
+            )
+            {
+                uniform token purpose = "guide"
+                double size = 1
+                quatf xformOp:orient = (1, 0, 0, 0)
+                float3 xformOp:scale = (0.1, 0.02, 0.1)
+                double3 xformOp:translate = (0.09, 0, 0)
+                uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+            }
+
+            def Cube "col_1" (
+                prepend apiSchemas = ["PhysicsCollisionAPI"]
+            )
+            {
+                uniform token purpose = "guide"
+                double size = 1
+                quatf xformOp:orient = (0.980067, 0, 0, -0.198669)
+                float3 xformOp:scale = (0.05, 0.02, 0.1)
+                double3 xformOp:translate = (0.15, -0.01, 0)
+                uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+            }
+        }
+    }
+
+    over "pelvis"
+    {
+        over "collisions" (
+            active = false
+        )
+        {
+        }
+
+        def Xform "collisions_primitive"
+        {
+            def Sphere "col_0" (
+                prepend apiSchemas = ["PhysicsCollisionAPI"]
+            )
+            {
+                uniform token purpose = "guide"
+                double radius = 0.07
+                quatf xformOp:orient = (1, 0, 0, 0)
+                double3 xformOp:translate = (0, 0, -0.08)
+                uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient"]
+            }
+        }
+    }
+
+    over "right_ankle_roll_link" (
+        prepend apiSchemas = ["PhysicsFilteredPairsAPI"]
+    )
+    {
+        prepend rel physics:filteredPairs = </g1_29dof_rev_1_0/right_knee_link>
+
+        over "collisions" (
+            active = false
+        )
+        {
+        }
+
+        def Xform "collisions_primitive"
+        {
+            def Cube "col_0" (
+                prepend apiSchemas = ["PhysicsCollisionAPI"]
+            )
+            {
+                uniform token purpose = "guide"
+                double size = 1
+                quatf xformOp:orient = (1, 0, 0, 0)
+                float3 xformOp:scale = (0.18, 0.06, 0.016)
+                double3 xformOp:translate = (0.04, 0, -0.029)
+                uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+            }
+
+            def Capsule "col_1" (
+                prepend apiSchemas = ["PhysicsCollisionAPI"]
+            )
+            {
+                uniform token axis = "Z"
+                double height = 0.05
+                uniform token purpose = "guide"
+                double radius = 0.01
+                quatf xformOp:orient = (0.70710677, 0, -0.70710677, 0)
+                double3 xformOp:translate = (0.07500000000000001, -0.026, -0.025)
+                uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient"]
+            }
+
+            def Capsule "col_2" (
+                prepend apiSchemas = ["PhysicsCollisionAPI"]
+            )
+            {
+                uniform token axis = "Z"
+                double height = 0.18
+                uniform token purpose = "guide"
+                double radius = 0.01
+                quatf xformOp:orient = (0.70710677, 0, 0.70710677, 0)
+                double3 xformOp:translate = (0.04, 0, -0.025)
+                uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient"]
+            }
+
+            def Capsule "col_3" (
+                prepend apiSchemas = ["PhysicsCollisionAPI"]
+            )
+            {
+                uniform token axis = "Z"
+                double height = 0.05
+                uniform token purpose = "guide"
+                double radius = 0.01
+                quatf xformOp:orient = (0.70710677, 0, -0.70710677, 0)
+                double3 xformOp:translate = (0.07500000000000001, 0.026, -0.025)
+                uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient"]
+            }
+        }
+    }
+
+    over "right_hip_pitch_link"
+    {
+        over "collisions" (
+            active = false
+        )
+        {
+        }
+    }
+
+    over "right_hip_yaw_link"
+    {
+        over "collisions" (
+            active = false
+        )
+        {
+        }
+
+        def Xform "collisions_primitive"
+        {
+            def Capsule "col_0" (
+                prepend apiSchemas = ["PhysicsCollisionAPI"]
+            )
+            {
+                uniform token axis = "Z"
+                double height = 0.15231546211727817
+                uniform token purpose = "guide"
+                double radius = 0.055
+                quatf xformOp:orient = (0.20106587, -0, -0.9795777, 0)
+                double3 xformOp:translate = (-0.03, 0, -0.1)
+                uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient"]
+            }
+        }
+    }
+
+    over "right_knee_link"
+    {
+        over "collisions" (
+            active = false
+        )
+        {
+        }
+
+        def Xform "collisions_primitive"
+        {
+            def Capsule "col_0" (
+                prepend apiSchemas = ["PhysicsCollisionAPI"]
+            )
+            {
+                uniform token axis = "Z"
+                double height = 0.15
+                uniform token purpose = "guide"
+                double radius = 0.045
+                quatf xformOp:orient = (0, 1, 0, 0)
+                double3 xformOp:translate = (0.01, 0, -0.075)
+                uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient"]
+            }
+
+            def Capsule "col_1" (
+                prepend apiSchemas = ["PhysicsCollisionAPI"]
+            )
+            {
+                uniform token axis = "Z"
+                double height = 0.08000000000000002
+                uniform token purpose = "guide"
+                double radius = 0.03
+                quatf xformOp:orient = (0, 1, 0, 0)
+                double3 xformOp:translate = (0.01, 0, -0.24000000000000002)
+                uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient"]
+            }
+        }
+    }
+
+    over "right_shoulder_pitch_link"
+    {
+        over "collisions" (
+            active = false
+        )
+        {
+        }
+    }
+
+    over "right_shoulder_yaw_link"
+    {
+        over "collisions" (
+            active = false
+        )
+        {
+        }
+
+        def Xform "collisions_primitive"
+        {
+            def Capsule "col_0" (
+                prepend apiSchemas = ["PhysicsCollisionAPI"]
+            )
+            {
+                uniform token axis = "Z"
+                double height = 0.13
+                uniform token purpose = "guide"
+                double radius = 0.035
+                quatf xformOp:orient = (1, 0, 0, 0)
+                double3 xformOp:translate = (0, 0, -0.015)
+                uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient"]
+            }
+        }
+    }
+
+    over "right_wrist_roll_link"
+    {
+        over "collisions" (
+            active = false
+        )
+        {
+        }
+    }
+
+    over "right_wrist_yaw_link"
+    {
+        over "collisions" (
+            active = false
+        )
+        {
+        }
+
+        def Xform "collisions_primitive"
+        {
+            def Cube "col_0" (
+                prepend apiSchemas = ["PhysicsCollisionAPI"]
+            )
+            {
+                uniform token purpose = "guide"
+                double size = 1
+                quatf xformOp:orient = (1, 0, 0, 0)
+                float3 xformOp:scale = (0.1, 0.02, 0.1)
+                double3 xformOp:translate = (0.09, 0, 0)
+                uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+            }
+
+            def Cube "col_1" (
+                prepend apiSchemas = ["PhysicsCollisionAPI"]
+            )
+            {
+                uniform token purpose = "guide"
+                double size = 1
+                quatf xformOp:orient = (0.980067, 0, 0, 0.198669)
+                float3 xformOp:scale = (0.05, 0.02, 0.1)
+                double3 xformOp:translate = (0.15, 0.01, 0)
+                uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+            }
+        }
+    }
+
+    over "torso_link"
+    {
+        over "collisions" (
+            active = false
+        )
+        {
+        }
+
+        def Xform "collisions_primitive"
+        {
+            def Capsule "col_0" (
+                prepend apiSchemas = ["PhysicsCollisionAPI"]
+            )
+            {
+                uniform token axis = "Z"
+                double height = 0.12000000000000001
+                uniform token purpose = "guide"
+                double radius = 0.09
+                quatf xformOp:orient = (1, 0, 0, 0)
+                double3 xformOp:translate = (0.01, 0, 0.14)
+                uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient"]
+            }
+
+            def Sphere "col_1" (
+                prepend apiSchemas = ["PhysicsCollisionAPI"]
+            )
+            {
+                uniform token purpose = "guide"
+                double radius = 0.06
+                quatf xformOp:orient = (1, 0, 0, 0)
+                double3 xformOp:translate = (0, 0, 0.43)
+                uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient"]
+            }
+        }
+    }
+
+    over "left_hip_roll_link" (
+        prepend apiSchemas = ["PhysicsFilteredPairsAPI"]
+    )
+    {
+        prepend rel physics:filteredPairs = </g1_29dof_rev_1_0/pelvis>
+
+        def Xform "collisions_primitive"
+        {
+            def Capsule "col_0" (
+                prepend apiSchemas = ["PhysicsCollisionAPI"]
+            )
+            {
+                uniform token axis = "Z"
+                double height = 0.08
+                uniform token purpose = "guide"
+                double radius = 0.06
+                quatf xformOp:orient = (0, 1, 0, 0)
+                double3 xformOp:translate = (0.02, 0, -0.04)
+                uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient"]
+            }
+        }
+    }
+
+    over "right_hip_roll_link" (
+        prepend apiSchemas = ["PhysicsFilteredPairsAPI"]
+    )
+    {
+        prepend rel physics:filteredPairs = </g1_29dof_rev_1_0/pelvis>
+
+        def Xform "collisions_primitive"
+        {
+            def Capsule "col_0" (
+                prepend apiSchemas = ["PhysicsCollisionAPI"]
+            )
+            {
+                uniform token axis = "Z"
+                double height = 0.08
+                uniform token purpose = "guide"
+                double radius = 0.06
+                quatf xformOp:orient = (0, 1, 0, 0)
+                double3 xformOp:translate = (0.02, 0, -0.04)
+                uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient"]
+            }
+        }
+    }
+
+    over "left_elbow_link" (
+        prepend apiSchemas = ["PhysicsFilteredPairsAPI"]
+    )
+    {
+        prepend rel physics:filteredPairs = </g1_29dof_rev_1_0/left_wrist_pitch_link>
+
+        def Xform "collisions_primitive"
+        {
+            def Capsule "col_0" (
+                prepend apiSchemas = ["PhysicsCollisionAPI"]
+            )
+            {
+                uniform token axis = "Z"
+                double height = 0.09
+                uniform token purpose = "guide"
+                double radius = 0.035
+                quatf xformOp:orient = (0.70710677, 0, 0.70710677, 0)
+                double3 xformOp:translate = (0.035, 0, -0.01)
+                uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient"]
+            }
+        }
+    }
+
+    over "left_wrist_pitch_link"
+    {
+        def Xform "collisions_primitive"
+        {
+            def Capsule "col_0" (
+                prepend apiSchemas = ["PhysicsCollisionAPI"]
+            )
+            {
+                uniform token axis = "Z"
+                double height = 0.06999999999999999
+                uniform token purpose = "guide"
+                double radius = 0.035
+                quatf xformOp:orient = (0.70710677, 0, 0.70710677, 0)
+                double3 xformOp:translate = (0.024999999999999998, 0, 0)
+                uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient"]
+            }
+        }
+    }
+
+    over "right_elbow_link" (
+        prepend apiSchemas = ["PhysicsFilteredPairsAPI"]
+    )
+    {
+        prepend rel physics:filteredPairs = </g1_29dof_rev_1_0/right_wrist_pitch_link>
+
+        def Xform "collisions_primitive"
+        {
+            def Capsule "col_0" (
+                prepend apiSchemas = ["PhysicsCollisionAPI"]
+            )
+            {
+                uniform token axis = "Z"
+                double height = 0.09
+                uniform token purpose = "guide"
+                double radius = 0.035
+                quatf xformOp:orient = (0.70710677, 0, 0.70710677, 0)
+                double3 xformOp:translate = (0.035, 0, -0.01)
+                uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient"]
+            }
+        }
+    }
+
+    over "right_wrist_pitch_link"
+    {
+        def Xform "collisions_primitive"
+        {
+            def Capsule "col_0" (
+                prepend apiSchemas = ["PhysicsCollisionAPI"]
+            )
+            {
+                uniform token axis = "Z"
+                double height = 0.06999999999999999
+                uniform token purpose = "guide"
+                double radius = 0.035
+                quatf xformOp:orient = (0.70710677, 0, 0.70710677, 0)
+                double3 xformOp:translate = (0.024999999999999998, 0, 0)
+                uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient"]
+            }
+        }
+    }
+}
+

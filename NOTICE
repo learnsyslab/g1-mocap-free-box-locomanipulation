@@ -1,0 +1,8 @@
+g1-mocap-free-box-locomanipulation
+Copyright 2026 Jim Yun-Jin Li and the Learning Systems and Robotics Lab (LSY), Technical University of Munich
+
+This product includes software and data developed by third parties, redistributed under
+their own licenses: Unitree Robotics (BSD-3-Clause), the Isaac Lab Project (BSD-3-Clause),
+unitree_rl_lab (Apache-2.0), whole_body_tracking (MIT), rsl_rl (BSD-3-Clause),
+Atarilab's mjlab-distill (Apache-2.0) and SBTO (MIT), and the OmniRetarget / OMOMO motion
+data (MIT). See THIRD_PARTY_NOTICES.md for what was used and the full license texts.

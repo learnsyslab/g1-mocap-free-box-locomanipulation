@@ -1,0 +1,8 @@
+# Applied (PIP_CONSTRAINT) to the install-isaaclab and install-package steps of
+# `pixi run -e train setup`, not to install-isaacsim, which needs torch 2.11.0 (see pixi.toml).
+# The versions the shipped checkpoints were trained with. Without them IsaacLab's rl extras
+# let pip upgrade torch to a CUDA 13 build whose libraries overwrite torch's CUDA 12 ones
+# (cuDNN then fails with CUDNN_STATUS_NOT_INITIALIZED).
+torch==2.10.0
+torchvision==0.25.0
+tensordict==0.13.0

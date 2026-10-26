@@ -1,0 +1,141 @@
+# g1-mocap-free-box-locomanipulation
+#
+#   git clone --recurse-submodules <this repo>          # or: git submodule update --init
+#
+#   sim    deploy runtime + MuJoCo sim2sim (CPU only)
+#            pixi run -e sim sim2sim                     # terminal 1
+#            pixi run -e sim run-sim                     # terminal 2
+#   real   deploy runtime on the robot + head-camera depth (CUDA GPU)
+#            pixi run -e real build-pyrealsense          # once
+#            pixi run -e real build-engine               # once per machine (needs the weights)
+#            pixi run -e real engine-check
+#            export G1_NETWORK_INTERFACE=<nic>          # the interface wired to the G1
+#            pixi run -e real realsense
+#            pixi run -e real depth-view                 # live view of what the policy sees
+#            pixi run -e real head-angle
+#            pixi run -e real run-real                   # asks you to type 'real'
+#   train  IsaacLab teacher / student training (CUDA GPU)
+#            pixi run -e train setup                     # once: torch, Isaac Sim, IsaacLab, this package
+#            pixi run -e train stage <stage>               # one stage of the training chain (README)
+#
+# See README.md for the full walkthrough and deploy/REAL_ROBOT.md for the robot.
+
+[workspace]
+name = "g1-mocap-free-box-locomanipulation"
+channels = ["conda-forge"]
+platforms = [
+    "linux-64",
+    # GPU machines: CUDA 12 driver, glibc >= 2.35 (Isaac Sim 6.0.1).
+    { name = "linux-64-cuda-12", platform = "linux-64", cuda = "12", glibc = "2.35" },
+]
+# The lock files (ours and the Fast-FoundationStereo submodule's) are format v7; an older
+# pixi cannot read them and silently re-solves instead.
+requires-pixi = ">=0.80"
+
+[environments]
+sim = { features = ["deploy", "cpu"], no-default-feature = true }
+real = { features = ["deploy", "gpu"], no-default-feature = true }
+train = { features = ["train"], no-default-feature = true }
+
+# ---------------------------------------------------------------------------------------
+# deploy: run_policy.py, sim2sim.py, realsense_depth.py
+# ---------------------------------------------------------------------------------------
+[feature.deploy.dependencies]
+python = "3.12.*"
+# unitree_sdk2py talks DDS through CycloneDDS 0.10.x; the Python binding below is built
+# against this C library (CYCLONEDDS_HOME), so nobody has to build it by hand.
+cyclonedds = "0.10.5.*"
+c-compiler = "*"
+
+[feature.deploy.activation.env]
+CYCLONEDDS_HOME = "$CONDA_PREFIX"
+
+[feature.deploy.pypi-dependencies]
+numpy = ">=2.0,<3"
+mujoco = ">=3.2,<4"
+pygame = ">=2.5,<3"
+cyclonedds = "==0.10.2"
+# Editable on purpose: a non-editable install leaves out the CRC library (crc_amd64.so)
+# that every LowCmd_ needs.
+unitree_sdk2py = { path = "deploy/third_party/unitree_sdk2_python", editable = true }
+
+[feature.deploy.tasks]
+sim2sim = { cmd = "python sim2sim.py", cwd = "deploy" }
+run-sim = { cmd = "python run_policy.py --target sim", cwd = "deploy" }
+# Head-camera level meter (listen-only): set the articulated head to the trained 47.6 deg.
+head-angle = { cmd = "python head_angle.py", cwd = "deploy" }
+# Live view of rt/camera/depth, the image the policy sees (listen-only).
+depth-view = { cmd = "python depth_view.py", cwd = "deploy" }
+
+[feature.cpu.pypi-dependencies]
+torch = { version = "==2.10.0", index = "https://download.pytorch.org/whl/cpu" }
+
+[feature.gpu]
+platforms = ["linux-64-cuda-12"]
+
+[feature.gpu.pypi-dependencies]
+torch = { version = "==2.10.0", index = "https://download.pytorch.org/whl/cu128" }
+# Pinned, not floated: a serialized engine is not portable across TensorRT versions, and
+# build-engine builds it with this one.
+tensorrt-cu12 = "==10.11.0.33"
+# For engine-check, which reads the reference stereo pair off disk.
+pillow = ">=10,<13"
+
+[feature.gpu.dependencies]
+# For build-pyrealsense (librealsense from source, RSUSB backend).
+cmake = "*"
+cxx-compiler = "*"
+make = "*"
+pkg-config = "*"
+libusb = "*"
+git = "*"
+
+[feature.gpu.tasks]
+run-real = { cmd = "python run_policy.py --target real --input gamepad", cwd = "deploy" }
+realsense = { cmd = "python realsense_depth.py", cwd = "deploy" }
+engine-check = { cmd = "python realsense_depth.py --engine-check", cwd = "deploy" }
+build-pyrealsense = { cmd = "bash deploy/scripts/build_pyrealsense.sh" }
+# Fast-FoundationStereo -> ONNX (640x480, valid_iters 8, max_disp 192) -> fp16 TensorRT
+# engine, built on THIS machine in the submodule's own pixi environment (its `trt` env pins
+# the same TensorRT 10.11.0.33 as this one, so the engine deserializes here). Needs the
+# research weights in deploy/third_party/Fast-FoundationStereo/weights/23-36-37/
+# (see deploy/REAL_ROBOT.md).
+build-engine = { cmd = "pixi run --frozen -e trt trt-export && pixi run --frozen -e trt trt-build", cwd = "deploy/third_party/Fast-FoundationStereo" }
+
+# ---------------------------------------------------------------------------------------
+# train: Isaac Sim 6.0.1 + IsaacLab (v3.0.0-beta2.patch1, submodule) + rsl-rl 5.0.1
+# ---------------------------------------------------------------------------------------
+# Isaac and torch are installed by tasks rather than locked as dependencies: torch must come
+# from the CUDA index and Isaac Sim from pypi.nvidia.com, and Isaac's dependency graph makes
+# normal lock updates slow and brittle. Order matters (torch first), so use `setup`.
+[feature.train]
+platforms = ["linux-64-cuda-12"]
+
+[feature.train.dependencies]
+python = "3.12.*"
+pip = "*"
+
+[feature.train.activation.env]
+OMNI_KIT_ACCEPT_EULA = "YES"
+
+[feature.train.tasks]
+# Order matters. Isaac Sim 6.0.1 requires torch 2.11.0, so that goes first (from the CUDA 12.8
+# index, or pip pulls a CUDA 13 build); IsaacLab's installer then replaces it with torch 2.10.0
+# + torchvision 0.25.0 (cu128), the versions the shipped checkpoints were trained with.
+# training/constraints.txt holds IsaacLab and this package to exactly those (and tensordict
+# 0.13.0): without it the rl extras let pip pull a CUDA 13 torch whose libraries overwrite the
+# CUDA 12 ones, and cuDNN then fails with CUDNN_STATUS_NOT_INITIALIZED.
+install-torch = "pip install torch==2.11.0 --index-url https://download.pytorch.org/whl/cu128"
+install-isaacsim = "pip install 'isaacsim[all,extscache]==6.0.1.0' --extra-index-url https://pypi.nvidia.com"
+# `rl[rsl-rl]` is this IsaacLab release's install token for rsl-rl (5.0.1, pinned by IsaacLab);
+# the older `rsl_rl` spelling is skipped with only a warning.
+install-isaaclab = { cmd = "./isaaclab.sh --install 'rl[rsl-rl]'", cwd = "training/third_party/IsaacLab", env = { PIP_CONSTRAINT = "$PIXI_PROJECT_ROOT/training/constraints.txt" } }
+install-package = { cmd = "pip install -e training/source/g1_mocap_free_box", env = { PIP_CONSTRAINT = "$PIXI_PROJECT_ROOT/training/constraints.txt" } }
+setup = { depends-on = ["install-torch", "install-isaacsim", "install-isaaclab", "install-package"] }
+check = "python -c 'import importlib.metadata as m, torch, isaaclab, rsl_rl; F = torch.nn.functional; F.conv1d(torch.ones(1, 1, 8, device=\"cuda\"), torch.ones(1, 1, 3, device=\"cuda\")); print(\"isaaclab\", m.version(\"isaaclab\"), \"rsl-rl\", m.version(\"rsl-rl-lib\"), \"torch\", torch.__version__, \"cuDNN\", torch.backends.cudnn.version(), \"OK\")'"
+train = { cmd = "python scripts/rsl_rl/train.py --headless", cwd = "training" }
+stage = { cmd = "python scripts/rsl_rl/stage.py", cwd = "training" }
+play = { cmd = "python scripts/rsl_rl/play.py", cwd = "training" }
+evaluate = { cmd = "python scripts/eval/evaluate_tracking_isaaclab.py --headless", cwd = "training" }
+render = { cmd = "python scripts/eval/render_student_rollout.py", cwd = "training" }
+export = { cmd = "python scripts/student/export_depth_student.py", cwd = "training" }

@@ -1,0 +1,9 @@
+__pycache__/
+*.egg-info/
+training/logs/
+logs/
+outputs/
+*.npz.tmp
+sim2sim_box_log.npz
+.pixi/
+.build/
