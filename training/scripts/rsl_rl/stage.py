@@ -4,7 +4,7 @@
 
 """Run one stage of the teacher -> student training chain.
 
-    pixi run -e train stage <stage> [--from CKPT_OR_RUN_DIR] [train.py args ...]
+    pixi run -e train stage <stage> [--from CKPT_OR_RUN_DIR] [--motion NPZ] [train.py args ...]
 
 Each stage resumes from the previous one. train.py resumes from
 logs/rsl_rl/<experiment>/<run>/<model_*.pt>, so this copies the starting checkpoint
@@ -13,6 +13,10 @@ stage starts from the checkpoint shipped in checkpoints/ (where there is one); p
 --from with your own previous run (a run directory -> its latest model_*.pt, or a .pt
 file) to chain your own training. Anything after the options goes to train.py
 (e.g. --num_envs 1024 --logger wandb).
+
+--motion trains on another reference (docs/CUSTOM_MOTION.md): it sets $G1_BOX_MOTION, so the
+box follows that file's size, mass and friction. The shipped checkpoints only fit the shipped
+motion, so with --motion every stage after stage0 needs --from.
 
     stage            task                                              starts from (default)
     stage0           G1-DummyHands-RealBox-Tracking-No-Obj-Terminate   scratch
@@ -60,6 +64,7 @@ def main() -> int:
     ap.add_argument("stage", choices=list(STAGES))
     ap.add_argument("--from", dest="start", default=None,
                     help="starting checkpoint: a .pt file or a run directory (its latest model_*.pt)")
+    ap.add_argument("--motion", default=None, help="reference motion npz to train on instead of the shipped one")
     args, train_args = ap.parse_known_args()
 
     task, experiment, default = STAGES[args.stage]
@@ -67,6 +72,15 @@ def main() -> int:
     # pixi runs this task inside training/; resolve --from against where the user typed it.
     base = Path(os.environ.get("INIT_CWD", os.getcwd()))
     start = (base / Path(args.start).expanduser()).resolve() if args.start else (CHECKPOINTS / default if default else None)
+    if args.motion:
+        motion = (base / Path(args.motion).expanduser()).resolve()
+        if not motion.is_file():
+            raise SystemExit(f"[stage] motion not found: {motion}")
+        if args.stage != "stage0" and not args.start:
+            raise SystemExit("[stage] the shipped checkpoints were trained on the shipped motion; with --motion, "
+                             "pass --from with your own previous stage")
+        os.environ["G1_BOX_MOTION"] = str(motion)
+        print(f"[stage] motion: {motion}")
     if args.stage != "stage0":
         if start is None:
             raise SystemExit(f"[stage] {args.stage} has no shipped starting checkpoint; pass --from "

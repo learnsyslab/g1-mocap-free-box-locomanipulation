@@ -178,6 +178,12 @@ See licenses/dependencies for license information of dependencies of this packag
 * The reference motion (`training/.../motions/sub3_realbox_dummy_hands.npz`,
   `deploy/policy/motion.npz`) was refined with SBTO, and the robot's PD gains are those of
   SBTO's MuJoCo model. SBTO is declared MIT-licensed.
+* `assets/mujoco/sbto/g1_mjx_dummy_hands.xml` and `assets/mujoco/sbto/meshes/*.STL`: SBTO's
+  own G1 model with dummy hands (meshes from Unitree's G1 description, BSD-3-Clause; see
+  above), used by `training/scripts/motion/add_computed_contact.py`; the mesh directory is
+  pointed at `assets/mujoco/meshes/g1/`, otherwise unmodified.
+* `training/scripts/motion/prepend_motion_leadin.py`: its standing keyframes mirror SBTO's
+  `sbto/models/unitree_g1/keyframes/g1_29dof_obj.xml`.
 
 ### OmniRetarget dataset and OMOMO
 

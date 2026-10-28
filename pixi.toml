@@ -66,6 +66,11 @@ run-sim = { cmd = "python run_policy.py --target sim", cwd = "deploy" }
 head-angle = { cmd = "python head_angle.py", cwd = "deploy" }
 # Live view of rt/camera/depth, the image the policy sees (listen-only).
 depth-view = { cmd = "python depth_view.py", cwd = "deploy" }
+# Own reference motion (docs/CUSTOM_MOTION.md); run from the repository root.
+# Before SBTO: ease the reference in from standing (and out to a stop).
+motion-leadin = "python training/scripts/motion/prepend_motion_leadin.py"
+# After convert-sbto: the geometry-measured hand / box contact schedule (required).
+add-contact = "python training/scripts/motion/add_computed_contact.py"
 
 [feature.cpu.pypi-dependencies]
 torch = { version = "==2.10.0", index = "https://download.pytorch.org/whl/cpu" }
@@ -141,3 +146,7 @@ render = { cmd = "python scripts/eval/render_student_rollout.py", cwd = "trainin
 render-reference = { cmd = "python scripts/eval/render_reference_motion.py", cwd = "training" }
 render-showcase = { cmd = "python scripts/eval/render_showcase.py", cwd = "training" }
 export = { cmd = "python scripts/student/export_depth_student.py", cwd = "training" }
+# Own reference motion (docs/CUSTOM_MOTION.md); run from the repository root.
+convert-sbto = "python training/scripts/motion/sbto_to_npz.py"
+check-contact = "python training/scripts/motion/check_reference_contact_isaaclab.py"
+check-grasp = "python training/scripts/motion/check_reference_grasp_isaaclab.py"

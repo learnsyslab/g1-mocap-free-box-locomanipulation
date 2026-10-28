@@ -52,9 +52,23 @@ DEPTH_HZ = 30.0
 DEPTH_W, DEPTH_H = CONTRACT.width, CONTRACT.height
 
 
+def _compile_with_motion_box(scene: str, motion_path: str) -> mujoco.MjModel:
+    """The scene with its box (geom "obj") resized to the motion's: half-extents, mass and
+    sliding friction, as the training task does (_sync_object_to_motion). Inertia follows
+    from the geometry. A motion without box fields keeps the scene's box."""
+    spec = mujoco.MjSpec.from_file(scene)
+    motion = np.load(motion_path)
+    if "object_geom_size" in motion:
+        box = spec.geom("obj")
+        box.size = [float(v) for v in np.asarray(motion["object_geom_size"], dtype=float)]
+        box.mass = float(np.asarray(motion["object_mass"]).reshape(-1)[0])
+        box.friction[0] = float(np.asarray(motion["object_friction"]).reshape(-1)[0])
+    return spec.compile()
+
+
 class Sim:
-    def __init__(self, scene: str, motion: Motion):
-        self.m = mujoco.MjModel.from_xml_path(scene)
+    def __init__(self, scene: str, motion: Motion, motion_path: str):
+        self.m = _compile_with_motion_box(scene, motion_path)
         self.d = mujoco.MjData(self.m)
         sid = lambda n: self.m.sensor_adr[mujoco.mj_name2id(self.m, mujoco.mjtObj.mjOBJ_SENSOR, n)]  # noqa: E731
         self.act = [mujoco.mj_name2id(self.m, mujoco.mjtObj.mjOBJ_ACTUATOR, n) for n in layout.BODY_JOINTS]
@@ -126,7 +140,7 @@ def main() -> int:
 
     init_dds("sim")
     motion = Motion(args.motion)
-    sim = Sim(args.scene, motion)
+    sim = Sim(args.scene, motion, args.motion)
     state_pub = ChannelPublisher(TOPIC_LOWSTATE, LowState_)
     state_pub.Init()
     depth_pub = ChannelPublisher(TOPIC_DEPTH, Image_)

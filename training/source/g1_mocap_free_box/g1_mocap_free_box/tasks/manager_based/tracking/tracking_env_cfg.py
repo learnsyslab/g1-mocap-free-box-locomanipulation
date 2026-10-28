@@ -123,6 +123,16 @@ class RobotSceneCfg(InteractiveSceneCfg):
 ##
 
 
+def _motion_file() -> str:
+    """The shipped reference, or $G1_BOX_MOTION. A relative path is taken from where the
+    command was typed ($INIT_CWD under pixi, whose tasks run inside training/)."""
+    path = os.environ.get("G1_BOX_MOTION")
+    if not path:
+        return f"{os.path.dirname(__file__)}/motions/sub3_realbox_dummy_hands.npz"
+    path = os.path.expanduser(path)
+    return path if os.path.isabs(path) else os.path.join(os.environ.get("INIT_CWD", os.getcwd()), path)
+
+
 @configclass
 class CommandsCfg:
     """Command specifications for the MDP."""
@@ -133,13 +143,13 @@ class CommandsCfg:
         # OMOMO), refined with SBTO for the dummy hands and the real 205 x 125 x 280 mm
         # box. 50 fps.
         #
-        # The motion file is pinned here rather than overridden on the command line on
-        # purpose. IsaacLab's hydra_task_config builds env_cfg first -- running
-        # __post_init__, and with it _sync_object_to_motion() -- and only then applies
-        # `env.*` overrides. So `env.commands.motion.motion_file=<new>.npz` on the CLI
-        # would retarget the reference while leaving the box at the OLD motion's extents,
-        # mass and friction, silently.
-        motion_file=f"{os.path.dirname(__file__)}/motions/sub3_realbox_dummy_hands.npz",
+        # Another motion (docs/CUSTOM_MOTION.md): set $G1_BOX_MOTION, or `stage --motion`.
+        # Not `env.commands.motion.motion_file=<new>.npz` on the CLI: IsaacLab's
+        # hydra_task_config builds env_cfg first -- running __post_init__, and with it
+        # _sync_object_to_motion() -- and only then applies `env.*` overrides, so the
+        # reference would change while the box kept the OLD motion's extents, mass and
+        # friction, silently. The environment variable is read before any of that.
+        motion_file=_motion_file(),
         anchor_body_name="torso_link",
         resampling_time_range=(1.0e9, 1.0e9),
         debug_vis=True,
@@ -545,6 +555,24 @@ class G1BoxTrackingEnvCfg(ManagerBasedRLEnvCfg):
         friction = float(np.asarray(motion["object_friction"], dtype=float)[0])
         spawn.physics_material.static_friction = friction
         spawn.physics_material.dynamic_friction = friction
+
+
+def zero_replay_randomization(cfg: ManagerBasedRLEnvCfg) -> None:
+    """Zero every randomization source on an already-built env cfg, in place.
+
+    For replaying or checking a reference exactly as recorded: no reset noise on
+    the robot or the box, no startup randomization, no pushes.
+    """
+    cfg.commands.motion = cfg.commands.motion.replace(
+        pose_range={},
+        velocity_range={},
+        joint_position_range=(0.0, 0.0),
+        object_pose_range={},
+        object_velocity_range={},
+    )
+    for name in ("physics_material", "add_joint_default_pos", "base_com", "object_physics_material",
+                 "object_mass", "push_object", "push_robot"):
+        setattr(cfg.events, name, None)
 
 
 class G1BoxTrackingPlayEnvCfg(G1BoxTrackingEnvCfg):

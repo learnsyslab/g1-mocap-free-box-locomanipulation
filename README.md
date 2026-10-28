@@ -178,6 +178,12 @@ pixi run -e train export --task G1-DummyHands-RealBox-RealCam-Finetune-Stage2 \
     --checkpoint ../checkpoints/student_realcam_stage2_model_8998.pt --out_dir /tmp/export
 ```
 
+### Your own reference motion or box
+
+[docs/CUSTOM_MOTION.md](docs/CUSTOM_MOTION.md): where SBTO fits in, converting its output
+(`motion-leadin`, `convert-sbto`, `add-contact`), checking the reference before training,
+and training and deploying on it (`stage --motion`, `$G1_BOX_MOTION`).
+
 ## 2. Sim2sim (MuJoCo, no robot needed)
 
 ```bash
@@ -225,12 +231,15 @@ network setup and the bring-up procedure with the gamepad.
 pixi.toml                        environments (sim / real / train) and tasks
 assets/isaaclab/g1-29dof/        G1 USD (primitive collision shapes) used for training
 assets/mujoco/                   G1 MJCF (camera at 47.6°), meshes, box, scene_box.xml
+assets/mujoco/sbto/              SBTO's G1 model, for the contact schedule of a new reference
 training/source/g1_mocap_free_box/  IsaacLab extension: tasks, MDP terms, student model + algorithm
   .../tracking/__init__.py         task registry (the pipeline above)
   .../tracking/tracking_env_cfg.py teacher environments
   .../tracking/distill_env_cfg.py  student environments, depth camera, depth corruption
   .../tracking/motions/            the reference motion
 training/scripts/                train / play / eval / render / export
+training/scripts/motion/         SBTO run -> motion npz, lead-in, reference checks
+docs/CUSTOM_MOTION.md            training on your own reference motion or box
 training/third_party/IsaacLab/   submodule
 checkpoints/                     teacher stage 0 + 4, student stages 1-3
 deploy/run_policy.py             the 50 Hz runtime (sim or robot): locomotion <-> box student
