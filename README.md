@@ -220,10 +220,17 @@ repository.
 
 ## 3. Real robot
 
-See [deploy/REAL_ROBOT.md](deploy/REAL_ROBOT.md): the head-camera depth pipeline
-(`deploy/realsense_depth.py`, Fast-FoundationStereo as a TensorRT engine), setting the
-articulated head to the trained 47.6 deg with the level meter (`pixi run -e real head-angle`),
-network setup and the bring-up procedure with the gamepad.
+Step by step in [deploy/REAL_ROBOT.md](deploy/REAL_ROBOT.md):
+
+* **Part A, once per PC**: install the `real` environment; give the PC's Ethernet port a static
+  address on the robot's network (Ubuntu Settings → Network → **+** → IPv4 **Manual**,
+  address `192.168.123.51`, netmask `24`; then `ping 192.168.123.161` and
+  `export G1_NETWORK_INTERFACE=<that interface>`); build pyrealsense2 and the
+  Fast-FoundationStereo engine; pair the gamepad; a desk test of the camera without the robot.
+* **Part B, every session**: debug mode on the remote, depth pipeline (`pixi run -e real
+  realsense`), check the image (`depth-view`), set the articulated head to the trained 47.6 deg
+  (`head-angle`), a dry run, then `run-real` with the gamepad.
+* **Troubleshooting**: camera errors, `head-angle` waiting for robot state, no network.
 
 ## Repository layout
 
