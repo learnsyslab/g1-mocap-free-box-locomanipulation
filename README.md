@@ -1,5 +1,7 @@
 # g1-mocap-free-box-locomanipulation
 
+https://github.com/user-attachments/assets/b0faae6b-7b8b-404a-8bf3-21f9d36052a1
+
 Motion-capture-free whole-body box loco-manipulation on the Unitree G1: depth camera + proprioception only.
 
 A Unitree G1 (29 DoF) picks up a 205 × 125 × 280 mm, 0.6 kg box from the floor and
